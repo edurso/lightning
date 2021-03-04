@@ -72,7 +72,9 @@ public class LogWriter implements Loop {
 
     public void flush() {
         try {
-            writer.flush();
+            if (writer != null){
+                writer.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
