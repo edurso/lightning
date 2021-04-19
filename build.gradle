@@ -15,8 +15,8 @@ plugins {
 }
 
 ext {
-    mGroupID = "frc"
-    mArtifactID = "lightning"
+    mGroupID = "com.lightningrobotics"
+    mArtifactID = "common"
     mVersionName = System.getenv("VERSION")
 }
 
