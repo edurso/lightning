@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 /**
  * Error codes for robot and means to log them
@@ -56,8 +56,13 @@ public class FaultCode {
     }
 
     static {
-        eachCode((Codes c, Boolean state) -> {
-            SmartDashboard.putBoolean("FAULT_" + c.toString(), state);
+        eachCode((Codes code, Boolean state) -> {
+            var nte = Shuffleboard.getTab("Fault Codes")
+                    .add("FAULT_" + code.toString(), state)
+                    .withWidget("Boolean Box")
+                    .withProperties(Map.of("colorWhenTrue", "green", "colorWhenFalse", "maroon"))
+                    .getEntry();
+            FaultCode.setNetworkTableEntry(code, nte);
         });
         try {
             Files.write(getFaultPath(), ("######### RESTART #########\n").getBytes(), StandardOpenOption.CREATE,
@@ -86,7 +91,7 @@ public class FaultCode {
 
     /**
      * Updates the {@link edu.wpi.first.networktables.NetworkTableEntry} for each 
-     * {@link frc.lightning.fault.FaultCode.Codes}
+     * {@link frc.lightning.fault.FaultCode.Codes}.
      */
     public static void update() {
         eachCode((Codes c, Boolean state) -> {
@@ -113,7 +118,8 @@ public class FaultCode {
 
     /**
      * Writes the fault code, effectively logging that it has been detected in 
-     * a log file, the system error stream, and on the {@link edu.wpi.first.wpilibj.smartdashboard.SmartDashboard}
+     * a log file and the system error stream. Per {@link #update()}, they will be updated
+     * automatically on {@link edu.wpi.first.wpilibj.shuffleboard.Shuffleboard Shuffleboard}
      * @param code The {@link frc.lightning.fault.FaultCode.Codes} to be written
      * @param msg The message to write to the log file
      */
@@ -122,7 +128,6 @@ public class FaultCode {
         try {
             if (!faults.contains(code)) {
                 faults.add(code);
-                SmartDashboard.putBoolean("FAULT_" + code.toString(), false);
 
                 Files.write(Paths.get("/home/lvuser/faults.log"),
                             ("FAULT Detected: " + code.toString() + " " + msg + "\n").getBytes(),
@@ -154,9 +159,11 @@ public class FaultCode {
     public static Map<String, Object> getModel() {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> faults = new HashMap<>();
+
         eachCode((Codes c, Boolean state) -> {
             faults.put("FAULT_" + c.toString(), state);
         });
+
         result.put("faults", faults);
         result.put("timer", Timer.getFPGATimestamp());
 
