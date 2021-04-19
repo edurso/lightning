@@ -128,7 +128,6 @@ public class FaultCode {
         try {
             if (!faults.contains(code)) {
                 faults.add(code);
-
                 Files.write(Paths.get("/home/lvuser/faults.log"),
                             ("FAULT Detected: " + code.toString() + " " + msg + "\n").getBytes(),
                             StandardOpenOption.CREATE,
